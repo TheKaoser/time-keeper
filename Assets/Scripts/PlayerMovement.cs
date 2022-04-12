@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
 
     float switchCurrentCoolDown = 0f;
     float deathCurrentCheckCoolDown = 0f;
-    float walkCurrentCoolDown = 0f;
+    float walkCurrentCoolDown = 1f;
 
     bool isRightFootstep;
 

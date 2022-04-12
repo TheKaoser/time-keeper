@@ -159,7 +159,6 @@ public class PlayerMovement : MonoBehaviour
                 {
                     PlayAudio(jumpAudios[Random.Range(2,4)]);
                 }
-                // currentGear = levelGenerator.NeareastGearFromPlayer();
             }
         }
         if (Input.GetKeyDown(KeyCode.DownArrow) && switchCurrentCoolDown <= 0)
@@ -179,8 +178,6 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator FlipPlayer()
     {
-        // Change assigned gear if in portal
-
         isSwitching = true;
         playerAnimator.SetBool(FLIP_PARAMETER, true); 
         PlayAudio(flipAudio);
@@ -190,25 +187,10 @@ public class PlayerMovement : MonoBehaviour
             currentGear.GetComponent<EdgeCollider2D>().enabled = false;
             if (isDownwards)
             {
-                // RaycastHit2D hit;
-                // hit = Physics2D.Raycast(transform.position, -transform.up);
-                // if (hit.collider != null)
-                // {
-                //     Debug.DrawRay(transform.position, transform.up * hit.distance, Color.red);
-                //     Debug.Log("Did Hit " + hit.collider.transform.position);
-                //     transform.Translate(hit.collider.transform.position + transform.up * 2f);
-                // }
                 transform.Translate(transform.up * 3f);
             }
             else
             {
-                // RaycastHit2D hit;
-                // hit = Physics2D.Raycast(transform.position, -transform.up, Mathf.Infinity, 8);
-                // if (hit.collider != null)
-                // {
-                //     Debug.Log("Did Hit " + hit.collider.name + " " + hit.collider.transform.position);
-                //     transform.Translate((Vector3)hit.collider.ClosestPoint(transform.position) - transform.up * 2f);
-                // }
                 transform.Translate(-transform.up * 3f);
             }
             playerSpriteRenderer.flipY = !playerSpriteRenderer.flipY;   

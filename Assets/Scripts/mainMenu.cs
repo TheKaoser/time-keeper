@@ -1,39 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class mainMenu : MonoBehaviour
+public class MainMenu : MonoBehaviour
 {
-    public static bool muted = false;
-    public static AudioSource mainMenuMusic;
-    public static void startGame()
+    public Image menuImage;
+    public Text pressToContinue;
+    public AudioSource audioSource;
+
+    public void ShowMenu()
     {
-        SceneManager.LoadScene(1);
+        menuImage.enabled = true;
+        pressToContinue.enabled = true;
+        audioSource.Play();
     }
 
-    public static void loadMenu()
+    public void HideMenu()
     {
-        SceneManager.LoadScene(0);
+        menuImage.enabled = false;
+        pressToContinue.enabled = false;
+        audioSource.Stop();
     }
-    public static void muteUnmute()
-    {
-        muted = !muted;
-
-        if (mainMenuMusic != null)
-        {
-            if (muted)
-            {
-                mainMenuMusic.volume = 0;
-            }
-
-            if (muted == false)
-            {
-                mainMenuMusic.volume = 1.4f;
-            }
-        }
-    }
-
-
-
 }

@@ -47,6 +47,26 @@ public class Gear : MonoBehaviour
         transform.parent.Rotate(0, 0, 0.01f);
     }
 
+    public Gear FirstGear()
+    {
+        CreateSprite();
+        vertices.Add(center);
+        for (int angle = 0 ; angle <= 360; angle += GenerateNextAngle())
+        {
+            GenerateNextPoint(true);
+            if (angle != 0)
+            {
+                GenerateNextTriangle();
+            }
+        }
+        GenerateLastTriangle();
+
+        ChangeSprite();
+        EditCollider();
+
+        return this;
+    }
+
     public Gear RandomizeGear()
     {
         CreateSprite();
@@ -54,7 +74,7 @@ public class Gear : MonoBehaviour
         for (int angle = 0 ; angle <= 360; angle += GenerateNextAngle())
         {
             if (Random.Range(1,3) == 1)
-                GenerateNextPoint();
+                GenerateNextPoint(false);
             else
                 GenerateNextTwoPoints();
 
@@ -73,7 +93,6 @@ public class Gear : MonoBehaviour
 
     void CreateSprite()
     {
-        // var texture2D = new Texture2D (TEXTURE_SIZE, TEXTURE_SIZE);
         var texture2D = gearTextures[Random.Range(0, 9)];
         spriteRenderer.sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), Vector2.zero);
         center = new Vector2 (TEXTURE_SIZE / 2, TEXTURE_SIZE / 2);
@@ -122,14 +141,21 @@ public class Gear : MonoBehaviour
         }
     }
 
-    void GenerateNextPoint()
+    void GenerateNextPoint(bool firstGear)
     {
         float x;
         float y;
 
         currectPointType = PointType.Single;
 
-        currentDistance = Random.Range((int)(distanceSinglePointMin * TEXTURE_SIZE), (int)(distanceSinglePointMax * TEXTURE_SIZE));
+        if (firstGear)
+        {
+            currentDistance = ((int)(distanceSinglePointMin * TEXTURE_SIZE) + (int)(distanceSinglePointMax * TEXTURE_SIZE)) / 2;
+        }
+        else
+        {
+            currentDistance = Random.Range((int)(distanceSinglePointMin * TEXTURE_SIZE), (int)(distanceSinglePointMax * TEXTURE_SIZE));
+        }
         x = center.x + (currentDistance * Mathf.Cos(currentAngle * Mathf.PI / 180));
         y = center.y + (currentDistance * Mathf.Sin(currentAngle * Mathf.PI / 180));
 
@@ -215,6 +241,7 @@ public class Gear : MonoBehaviour
     void EditCollider()
     {
         vertices.RemoveAt(0);
+        vertices.Add(vertices[0]);
         foreach (Vector2 vertice in vertices)
         {
             verticesAux.Add(vertice / 100);

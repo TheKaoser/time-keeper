@@ -16,7 +16,7 @@ public class PlayerMovement : MonoBehaviour
     const float SPEED = .14f;
     const float JUMP_FORCE = 11f;
 
-    float SWITCH_COOLDOWN = 1f;
+    float SWITCH_COOLDOWN = 1.5f;
     float DEATH_COOLDOWN = 0.1f;
     float WALK_COOLDOWN = 0.3f;
 
@@ -35,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
     Vector2 lastPosition;
 
     bool isDownwards = false;
-    public bool isSwitching = false;
+    public bool isFliping = false;
     bool isPlayerDeath;
 
     public enum JumpingStates
@@ -67,15 +67,8 @@ public class PlayerMovement : MonoBehaviour
         {
             UpdateCooldowns();
             HandleInput();
-            CheckDeath();
+            StartCoroutine(CheckDeath());
         }
-    }
-
-    void UpdateCooldowns()
-    {
-        switchCurrentCoolDown -= Time.deltaTime;
-        deathCurrentCheckCoolDown -= Time.deltaTime;
-        walkCurrentCoolDown -= Time.deltaTime;
     }
 
     void FixedUpdate()
@@ -88,6 +81,25 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void ResetPlayer()
+    {
+        playerAnimator.SetBool(FLIP_PARAMETER, false);
+        isDownwards = false;
+        isFliping = false;
+        jumpState = JumpingStates.ONE_JUMP;
+        isPlayerDeath = false;
+        playerSpriteRenderer.flipY = false;
+        transform.position = new Vector3(0, 50, 0); 
+        playerAnimator.Play("Walk");
+    }
+    
+    void UpdateCooldowns()
+    {
+        switchCurrentCoolDown -= Time.deltaTime;
+        deathCurrentCheckCoolDown -= Time.deltaTime;
+        walkCurrentCoolDown -= Time.deltaTime;
+    }
+
     public void AssignGear(Gear newGear)
     {
         currentGear = newGear;
@@ -97,7 +109,7 @@ public class PlayerMovement : MonoBehaviour
     {
         transform.position += transform.right * SPEED;
 
-        if (walkCurrentCoolDown <= 0 && jumpState == JumpingStates.GROUNDED)
+        if (walkCurrentCoolDown <= 0 && jumpState == JumpingStates.GROUNDED && !isFliping)
         {
             if (isRightFootstep)
             {
@@ -161,7 +173,7 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
         }
-        if (Input.GetKeyDown(KeyCode.DownArrow) && switchCurrentCoolDown <= 0)
+        if (Input.GetKeyDown(KeyCode.DownArrow) && switchCurrentCoolDown <= 0 && jumpState == JumpingStates.GROUNDED)
         {
             StartCoroutine(FlipPlayer());
             switchCurrentCoolDown = SWITCH_COOLDOWN;
@@ -178,7 +190,7 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator FlipPlayer()
     {
-        isSwitching = true;
+        isFliping = true;
         playerAnimator.SetBool(FLIP_PARAMETER, true); 
         PlayAudio(flipAudio);
         yield return new WaitForSeconds(SWITCH_TIME);
@@ -187,17 +199,17 @@ public class PlayerMovement : MonoBehaviour
             currentGear.GetComponent<EdgeCollider2D>().enabled = false;
             if (isDownwards)
             {
-                transform.Translate(transform.up * 3f);
+                transform.position = Vector3.MoveTowards(transform.position, (transform.position - currentGear.transform.parent.position) * 100f, 3f);
             }
             else
             {
-                transform.Translate(-transform.up * 3f);
+                transform.position = Vector3.MoveTowards(transform.position, currentGear.transform.parent.position, 3f);
             }
             playerSpriteRenderer.flipY = !playerSpriteRenderer.flipY;   
             isDownwards = !isDownwards;
             currentGear.GetComponent<EdgeCollider2D>().enabled = true;
             playerAnimator.SetBool(FLIP_PARAMETER, false);
-            isSwitching = false;
+            isFliping = false;
         }
     }
 
@@ -211,7 +223,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void CheckDeath()
+    IEnumerator CheckDeath()
     {
         if (deathCurrentCheckCoolDown <= 0)
         {
@@ -228,6 +240,8 @@ public class PlayerMovement : MonoBehaviour
                 }
                 isPlayerDeath = true;
                 PlayAudio(dieAudio);
+                yield return new WaitForSeconds(3f);
+                levelGenerator.Start();
             }
             lastPosition = transform.position;
             deathCurrentCheckCoolDown = DEATH_COOLDOWN;

@@ -6,10 +6,7 @@ using System;
 
 public class LevelGenerator : MonoBehaviour
 {
-    [Range(0f, 1f)]
-    public float [] radiusRange;
-    [Range(0f, 1f)]
-    public float [] ropeRange;
+    public MainMenu mainMenu;
 
     float lastAngle = 0;
     public GameObject gearPrefab;
@@ -21,40 +18,59 @@ public class LevelGenerator : MonoBehaviour
 
     public PlayerMovement playerMovement;
 
-    void Start()
+    public void Start()
     {
-        StartCoroutine(GenerateGears());   
-        scoreNumber.text = ToRoman(1);
+        mainMenu.ShowMenu();
+        playerMovement.ResetPlayer();
+        Camera.main.GetComponent<AudioSource>().Pause();
+        StartCoroutine(BeginRun());
     }
 
-    IEnumerator GenerateGears()
+    IEnumerator BeginRun()
+    {
+        foreach (Gear gear in gears)
+        {
+            Destroy(gear.transform.parent.gameObject);
+        }
+        gears.Clear();
+        GenerateFirstGear();
+        yield return new WaitUntil(() => Input.anyKeyDown);
+        Camera.main.GetComponent<AudioSource>().Play();
+        score = 0;
+        scoreNumber.text = ToRoman(1);
+        mainMenu.HideMenu();
+        StartCoroutine(GenerateOtherGears());
+    }
+
+    void GenerateFirstGear()
+    {
+        Gear newGear = CreateGear();
+        newGear.FirstGear();
+        playerMovement.AssignGear(newGear);
+        newGear.DecidePositionFromOtherGear(null);
+    }
+
+    IEnumerator GenerateOtherGears()
     {
         int i=0;
         do
         {
             Gear newGear = CreateGear();
             newGear.RandomizeGear();
-            if (i == 0)
+            
+            Gear selectedConnectedGearParent;
+            do 
             {
-                playerMovement.AssignGear(newGear);
-                newGear.DecidePositionFromOtherGear(null);
+                selectedConnectedGearParent = gears[UnityEngine.Random.Range(0, gears.Count - 1)];
             }
-            else
-            {
-                Gear selectedConnectedGearParent;
-                do 
-                {
-                    selectedConnectedGearParent = gears[UnityEngine.Random.Range(0, gears.Count - 1)];
-                }
-                while (selectedConnectedGearParent.hasChild);
-                newGear.DecidePositionFromOtherGear(selectedConnectedGearParent);
-                newGear.DecideRotationFromOtherGear(selectedConnectedGearParent);
-            }
-            i++;
+            while (selectedConnectedGearParent.hasChild);
+            newGear.DecidePositionFromOtherGear(selectedConnectedGearParent);
+            newGear.DecideRotationFromOtherGear(selectedConnectedGearParent);
             int currentScore = score;
+            i++;
             if (i > 2)
                 yield return new WaitUntil(() => score == currentScore + 1);
-        } while (i < 5);
+        } while (true);
     }
 
     float CalculateTotalAngle(float wedgeAngle)

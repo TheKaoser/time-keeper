@@ -44,7 +44,14 @@ public class Gear : MonoBehaviour
 
     void Update()
     {
-        transform.parent.Rotate(0, 0, 0.01f);
+        if (gearRotation == Rotation.Right)
+        {
+            transform.parent.Rotate(0, 0, -0.01f);
+        }
+        else
+        {
+            transform.parent.Rotate(0, 0, 0.01f);
+        }
     }
 
     public Gear FirstGear()
@@ -54,6 +61,7 @@ public class Gear : MonoBehaviour
         for (int angle = 0 ; angle <= 360; angle += GenerateNextAngle())
         {
             GenerateNextPoint(true);
+
             if (angle != 0)
             {
                 GenerateNextTriangle();
@@ -63,6 +71,7 @@ public class Gear : MonoBehaviour
 
         ChangeSprite();
         EditCollider();
+        transform.localScale *= scale;
 
         return this;
     }
@@ -87,16 +96,16 @@ public class Gear : MonoBehaviour
 
         ChangeSprite();
         EditCollider();
+        transform.localScale *= scale;
 
         return this;
     }
 
-    void CreateSprite()
+    void  CreateSprite()
     {
         var texture2D = gearTextures[Random.Range(0, 9)];
         spriteRenderer.sprite = Sprite.Create(texture2D, new Rect(0, 0, texture2D.width, texture2D.height), Vector2.zero);
         center = new Vector2 (TEXTURE_SIZE / 2, TEXTURE_SIZE / 2);
-        transform.localScale *= scale;
     }
 
     public void DecidePositionFromOtherGear(Gear otherGear)
@@ -159,7 +168,7 @@ public class Gear : MonoBehaviour
         x = center.x + (currentDistance * Mathf.Cos(currentAngle * Mathf.PI / 180));
         y = center.y + (currentDistance * Mathf.Sin(currentAngle * Mathf.PI / 180));
 
-        vertices.Add(new Vector2(x + center.x / 100 * scale, y + center.y / 100 * scale));
+        vertices.Add(new Vector2(x, y));
     }
     
     void GenerateNextTwoPoints()
@@ -180,8 +189,8 @@ public class Gear : MonoBehaviour
         x2 = center.x + (currentDistance * Mathf.Cos(currentAngle * Mathf.PI / 180));
         y2 = center.y + (currentDistance * Mathf.Sin(currentAngle * Mathf.PI / 180));
 
-        vertices.Add(new Vector2(x1 + center.x / 100 * scale, y1 + center.y / 100 * scale));
-        vertices.Add(new Vector2(x2 + center.x / 100 * scale, y2 + center.y / 100 * scale));
+        vertices.Add(new Vector2(x1, y1));
+        vertices.Add(new Vector2(x2, y2));
     }
 
     void GenerateNextTriangle()

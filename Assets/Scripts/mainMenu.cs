@@ -8,6 +8,7 @@ public class MainMenu : MonoBehaviour
 {
     public Image menuImage;
     public Text pressToContinue;
+    public Text tutorial;
     public AudioSource audioSource;
 
     public void ShowMenu()
@@ -22,5 +23,15 @@ public class MainMenu : MonoBehaviour
         menuImage.enabled = false;
         pressToContinue.enabled = false;
         audioSource.Stop();
+    }
+
+    public void ShowTutorial()
+    {
+        tutorial.enabled = true;
+    }
+    
+    public void HideTutorial()
+    {
+        tutorial.enabled = false;
     }
 }

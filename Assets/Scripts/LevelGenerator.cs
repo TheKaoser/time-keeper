@@ -20,6 +20,7 @@ public class LevelGenerator : MonoBehaviour
 
     public void Start()
     {
+        mainMenu.HideTutorial();
         mainMenu.ShowMenu();
         playerMovement.ResetPlayer();
         Camera.main.GetComponent<AudioSource>().Pause();
@@ -39,6 +40,7 @@ public class LevelGenerator : MonoBehaviour
         score = 0;
         scoreNumber.text = ToRoman(1);
         mainMenu.HideMenu();
+        mainMenu.ShowTutorial();
         StartCoroutine(GenerateOtherGears());
     }
 
@@ -87,9 +89,20 @@ public class LevelGenerator : MonoBehaviour
 
     public Gear NextGear()
     {
-        score++;
-        scoreNumber.text = ToRoman(score + 1);
-        return gears[score];
+        if (gears.Count != 1)
+        {
+            if (score == 0)
+            {
+                mainMenu.HideTutorial();
+            }
+            score++;
+            scoreNumber.text = ToRoman(score + 1);
+            return gears[score];
+        }
+        else
+        {
+            return gears[0];
+        }
     }
 
     public Gear NeareastGearFromPlayer()

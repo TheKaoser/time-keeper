@@ -8,15 +8,15 @@ public class PlayerMovement : MonoBehaviour
     const string JUMP_ANIMATION_BLACK = "JumpAnimationBlack";
     const string DEATH_ANIMATION_WHITE = "DeathAnimationWhite";
     const string DEATH_ANIMATION_BLACK = "DeathAnimationBlack";
+    const string FLIP_ANIMATION_WHITE = "FlipAnimationWhite";
+    const string FLIP_ANIMATION_BLACK = "FlipAnimationBlack";
     const string TURN_ON_COLLIDER = "turnOnCollider";
-    const string FLIP_PLAYER = "FlipPlayer";
-    const string FLIP_PARAMETER = "changeDirection";
     const float SWITCH_TIME = 1.167f / 2;
     const float GRAVITY = 30f;
     const float SPEED = .14f;
     const float JUMP_FORCE = 11f;
 
-    float SWITCH_COOLDOWN = 1.5f;
+    float SWITCH_COOLDOWN = SWITCH_TIME;
     float DEATH_COOLDOWN = 0.1f;
     float WALK_COOLDOWN = 0.3f;
 
@@ -83,7 +83,6 @@ public class PlayerMovement : MonoBehaviour
 
     public void ResetPlayer()
     {
-        playerAnimator.SetBool(FLIP_PARAMETER, false);
         isDownwards = false;
         isFliping = false;
         jumpState = JumpingStates.ONE_JUMP;
@@ -102,7 +101,10 @@ public class PlayerMovement : MonoBehaviour
 
     public void AssignGear(Gear newGear)
     {
-        currentGear = newGear;
+        if (newGear)
+        {
+            currentGear = newGear;
+        }
     }
 
     void HandleMovement()
@@ -191,26 +193,23 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator FlipPlayer()
     {
         isFliping = true;
-        playerAnimator.SetBool(FLIP_PARAMETER, true); 
         PlayAudio(flipAudio);
-        yield return new WaitForSeconds(SWITCH_TIME);
-        if (!isPlayerDeath)
+        currentGear.GetComponent<EdgeCollider2D>().enabled = false;
+        if (isDownwards)
         {
-            currentGear.GetComponent<EdgeCollider2D>().enabled = false;
-            if (isDownwards)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, (transform.position - currentGear.transform.parent.position) * 100f, 3f);
-            }
-            else
-            {
-                transform.position = Vector3.MoveTowards(transform.position, currentGear.transform.parent.position, 3f);
-            }
-            playerSpriteRenderer.flipY = !playerSpriteRenderer.flipY;   
-            isDownwards = !isDownwards;
-            currentGear.GetComponent<EdgeCollider2D>().enabled = true;
-            playerAnimator.SetBool(FLIP_PARAMETER, false);
-            isFliping = false;
+            playerAnimator.Play(FLIP_ANIMATION_BLACK);
+            transform.position = Vector3.MoveTowards(transform.position, (transform.position - currentGear.transform.parent.position) * 100f, 3f);
         }
+        else
+        {
+            playerAnimator.Play(FLIP_ANIMATION_WHITE);
+            transform.position = Vector3.MoveTowards(transform.position, currentGear.transform.parent.position, 3f);
+        }
+        playerSpriteRenderer.flipY = !playerSpriteRenderer.flipY;   
+        isDownwards = !isDownwards;
+        currentGear.GetComponent<EdgeCollider2D>().enabled = true;
+        yield return new WaitForSeconds(SWITCH_TIME);
+        isFliping = false;
     }
 
     void OnTriggerEnter2D(Collider2D col)
@@ -228,7 +227,7 @@ public class PlayerMovement : MonoBehaviour
         if (deathCurrentCheckCoolDown <= 0)
         {
             float distanceBetweenPositions = Vector2.Distance(transform.position, lastPosition);
-            if (distanceBetweenPositions < 0.075f || distanceBetweenPositions > 15f)
+            if (distanceBetweenPositions < 0.1f || distanceBetweenPositions > 15f)
             {
                 if (isDownwards)
                 {
